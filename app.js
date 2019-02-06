@@ -1,3 +1,4 @@
+//I was going to attmept a solition where I built buttons as the tabs but the document object was not avaliable -- why is that the case?
 const express = require('express');
 const db = require('./db');
 
