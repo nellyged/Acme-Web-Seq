@@ -4,7 +4,7 @@ const db = require('./db');
 const app = express();
 module.exports = app;
 
-const renderPage = (tab, tabs) => {
+const renderPage = (tab, tabs, things) => {
   return `
       <html>
       <head>
@@ -28,10 +28,12 @@ const renderPage = (tab, tabs) => {
             .join('')}
         </ul>
         <div id = 'tabContent'>
-
-        <h1>${tab.heading}</h1>
-        <p>${tab.content}</p>
-
+        ${things
+          .map(page => {
+            return `<h1> ${page.heading} </h1>
+          <p> ${page.content} </p>`;
+          })
+          .join('')}
         </div>
       </div>
       </body>
@@ -55,7 +57,18 @@ app.get('/', (req, res, next) => {
 });
 
 app.get('/pages/:id', (req, res, next) => {
+  let tab, things;
   db.getTab(req.params.id)
-    .then(tab => res.send(renderPage(tab, req.tabs)))
-    .catch(next);
+    .then(gotTab => {
+      tab = gotTab;
+      console.log(gotTab);
+    })
+    //.catch(ex => console.log(ex));
+    .then(
+      db.getThings(req.params.id).then(gotThings => {
+        res.send(renderPage(tab, req.tabs, gotThings));
+        //console.log(things);
+      })
+    )
+    .catch(ex => console.log(ex));
 });

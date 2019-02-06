@@ -1,3 +1,4 @@
+//on your Prof solution client was place in {} like an object when declared at the top of the file .... why?
 const pg = require('pg');
 const client = new pg.Client('postgres://localhost/acme_users_db');
 
@@ -47,10 +48,7 @@ const getTabs = () => {
 
 const getTab = id => {
   return client
-    .query(
-      'SELECT * FROM tabs inner join things on tabs.id = things.tab_id WHERE tabs.id = $1;',
-      [id]
-    )
+    .query('SELECT * FROM tabs WHERE tabs.id = $1;', [id])
     .then(response => response.rows[0]);
 };
 
