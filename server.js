@@ -1,7 +1,7 @@
 //const express = require('express');
 const { models, initDb } = require('./db');
 const app = require('./app');
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 1337;
 
 initDb(true)
   .then(() => {
