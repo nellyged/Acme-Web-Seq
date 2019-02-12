@@ -1,10 +1,12 @@
 const Sequelize = require('sequelize');
-const config = require('../config.json');
+//const config = require('../config.json');
 
-console.log(config.use_env_variable);
-
-if (config.use_env_variable) {
-  module.exports = new Sequelize(process.env[config.use_env_variable]);
+if (process.env.DATABASE_URL) {
+  module.exports = new Sequelize(process.env.DATABASE_URL, {
+    dialect: 'postgres',
+    protocol: 'postgres',
+    logging: true, //false
+  });
 } else {
   module.exports = new Sequelize('acme_users_db', '', '', {
     dialect: 'postgres', //telling the sequelize what kind of DB we are using
