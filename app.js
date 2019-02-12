@@ -1,27 +1,69 @@
-//I was going to attmept a solition where I built buttons as the tabs but the document object was not avaliable -- why is that the case?
 const express = require('express');
-const db = require('./db');
-
+const { models } = require('./db');
 const app = express();
 module.exports = app;
 
-const renderPage = (tab, tabs, things) => {
+// app.get('/', (req, res, next) => {
+//   //returns a promise from the db
+//   models.Content.findAll()
+//     .then(contents => {
+//       res.send({
+//         contents: contents.map(({ heading, text }) => ({ heading, text })),
+//       });
+//     })
+//     .catch(next);
+// });
+
+app.use((req, res, next) => {
+  models.Page.findAll()
+    .then(pages => {
+      req.pages = pages;
+      next();
+    })
+    .catch(next);
+});
+
+app.get('/', (req, res, next) => {
+  const page = req.pages[0];
+  res.redirect(`/pages/${page.id}`);
+});
+
+app.get('/pages/:id', (req, res, next) => {
+  let pageWithContent;
+  models.Page.findByPk(
+    parseInt(req.params.id, 10),
+    //this is grabbing all the contents asscoiated with this page
+    { include: [models.Content] }
+  )
+    .then(pageFromDb => {
+      pageWithContent = pageFromDb;
+      if (!pageWithContent) res.sendStatus(404);
+      const { name, contents } = pageWithContent;
+
+      //res.send(contents);
+
+      res.send(renderPage(name, req.pages, contents));
+    })
+    .catch(ex => console.log(ex));
+});
+
+const renderPage = (page, pages, contents) => {
   return `
       <html>
       <head>
         <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css' />
       </head>
       <body>
-
         <div class='container'>
         <h1>Acme Web</h1>
+        <h1>${page}</h1>
         <ul class='nav nav-tabs'>
-          ${tabs
-            .map(tab => {
+          ${pages
+            .map(page => {
               return `
               <li class='nav-item'>
-                <a href='/pages/${tab.id}' class='nav-link'>
-                ${tab.name}
+                <a href='/pages/${page.id}' class='nav-link'>
+                ${page.name}
                 </a>
               </li>
             `;
@@ -29,10 +71,9 @@ const renderPage = (tab, tabs, things) => {
             .join('')}
         </ul>
         <div id = 'tabContent'>
-        ${things
-          .map(page => {
-            return `<h1> ${page.heading} </h1>
-          <p> ${page.content} </p>`;
+        ${contents
+          .map(content => {
+            return `<p> ${content.heading} <br> ${content.text} </p>`;
           })
           .join('')}
         </div>
@@ -41,35 +82,3 @@ const renderPage = (tab, tabs, things) => {
       </html>
     `;
 };
-
-app.use((req, res, next) => {
-  db.getTabs()
-    .then(tabs => {
-      req.tabs = tabs;
-      next();
-    })
-    .catch(next);
-});
-
-//I had to add toStsing in order for the id value to generate
-app.get('/', (req, res, next) => {
-  const tab = req.tabs[0];
-  res.redirect(`/pages/${tab.id}`);
-});
-
-app.get('/pages/:id', (req, res, next) => {
-  let tab, things;
-  db.getTab(req.params.id)
-    .then(gotTab => {
-      tab = gotTab;
-      console.log(gotTab);
-    })
-    //.catch(ex => console.log(ex));
-    .then(
-      db.getThings(req.params.id).then(gotThings => {
-        res.send(renderPage(tab, req.tabs, gotThings));
-        //console.log(things);
-      })
-    )
-    .catch(ex => console.log(ex));
-});
