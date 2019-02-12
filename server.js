@@ -1,7 +1,7 @@
 //const express = require('express');
 const { models, initDb } = require('./db');
 const app = require('./app');
-//const port = process.env.PORT || 1337;
+const port = process.env.PORT || 1337;
 
 initDb(true)
   .then(() => {
@@ -91,7 +91,7 @@ initDb(true)
     console.log('DB Connected & Seeded');
 
     //dont start the app until the DB is running
-    app.listen(1337, () => console.log(`listening on port 1337`));
+    app.listen(port, () => console.log(`listening on port ${port}`));
   })
   .catch(e => {
     console.log('DB Not Connected');
