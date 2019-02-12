@@ -1,4 +1,3 @@
-//const express = require('express');
 const { models, initDb } = require('./db');
 const app = require('./app');
 const port = process.env.PORT || 1337;
